@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@drawable/main"
+    tools:context="com.example2017.android.admin.EldalelSetting">
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Post City"
+        android:onClick="City"
+        android:id="@+id/button2"
+        android:textColor="#FFFFFF"
+        android:background="#2196F3"
+        android:layout_marginBottom="10dp"
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="add catorgy"
+        android:id="@+id/button"
+        android:layout_below="@+id/button2"
+        android:layout_centerHorizontal="true"
+        android:onClick="cat"
+        android:layout_marginBottom="10dp"
+        android:textColor="#FFFFFF"
+        android:background="#2196F3"
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="add shop as post"
+        android:id="@+id/button4"
+        android:layout_below="@+id/button"
+        android:layout_centerHorizontal="true"
+        android:onClick="shop"
+        android:textColor="#FFFFFF"
+        android:background="#2196F3"
+        android:layout_marginBottom="10dp"
+        />
+
+
+</RelativeLayout>
