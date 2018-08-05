@@ -11,6 +11,7 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
@@ -34,19 +35,21 @@ import droidninja.filepicker.FilePickerBuilder;
 
 public class Shop extends AppCompatActivity {
     private Spinner spinnerCity, spinnerCatorgy;
-    private DatabaseReference catorgy_database, city_database, ShopVisitors;
-    private StorageReference s;
+    private DatabaseReference catorgy_database, city_database, ShopVisitors,offers;
+    private StorageReference Storage;
     int initialVisits = 0;
     private MediaPlayer mediaPlayer;
     ProgressDialog progressDialog;
     String city_selected, catorgy_selected;
     public static final int MultiImages = 1 ;
     public static final int SoloImages  = 2 ;
-    private Uri imageuri = null;
-    ImageButton imageButton;
+    public static final int OfferImages  = 3 ;
+    private Uri imageuri  , imageuri_offer= null;
+    ImageButton imageButton,ImageButton_offer;
     EditText editText_shop, editText_home, editText_home2, editText_home3, editText_mobile, editText_mobile2, editText_mobile3, editText_mobile4, editText_details, facebook, Instgram, Twitter;
-
-
+    TextView txt_alert;
+    CheckBox checkBox;
+    boolean   check_offer=false;
     ArrayList<Uri> filepath = new ArrayList<>();
     GridView gridView;
     DatabaseReference post=null;
@@ -58,17 +61,16 @@ public class Shop extends AppCompatActivity {
         Firebase.setAndroidContext(this);
         city_database = FirebaseDatabase.getInstance().getReference().child("City");
         catorgy_database = FirebaseDatabase.getInstance().getReference().child("catorgy");
-        s = FirebaseStorage.getInstance().getReference();
+        Storage = FirebaseStorage.getInstance().getReference();
+        offers=FirebaseDatabase.getInstance().getReference().child("offers");
         ShopVisitors = FirebaseDatabase.getInstance().getReference().child("ShopVisitors");
         mediaPlayer = MediaPlayer.create(this, R.raw.notify);
 
         gridView = (GridView) findViewById(R.id.gridview);
-
         spinnerCity = (Spinner) findViewById(R.id.spinner_city);
         spinnerCatorgy = (Spinner) findViewById(R.id.spinner_catorgy);
         imageButton = (ImageButton) findViewById(R.id.imageButton);
-
-
+        ImageButton_offer=(ImageButton)findViewById(R.id.imageButton_offer);
         editText_shop = (EditText) findViewById(R.id.editText_shop);
         editText_mobile = (EditText) findViewById(R.id.editText_mobile);
         editText_mobile2 = (EditText) findViewById(R.id.editText_mobile2);
@@ -80,10 +82,29 @@ public class Shop extends AppCompatActivity {
         facebook = (EditText) findViewById(R.id.editText_facebook);
         Instgram = (EditText) findViewById(R.id.editText_Instgram);
         Twitter = (EditText) findViewById(R.id.editText_Twitter);
-
-
         editText_details = (EditText) findViewById(R.id.editText_details);
 
+        txt_alert=(TextView)findViewById(R.id.textView_alert);
+        checkBox=(CheckBox)findViewById(R.id.check_offer);
+
+
+
+
+        checkBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(check_offer==false) {
+                    check_offer = true;
+                    txt_alert.setVisibility(View.VISIBLE);
+                    ImageButton_offer.setVisibility(View.VISIBLE);
+                  } else{
+
+                    check_offer = false;
+                    txt_alert.setVisibility(View.INVISIBLE);
+                    ImageButton_offer.setVisibility(View.INVISIBLE);
+                    }
+            }
+        });
 
         progressDialog = new ProgressDialog(this);
 
@@ -137,11 +158,26 @@ public class Shop extends AppCompatActivity {
             progressDialog.setMessage("Wait..");
             progressDialog.show();
             progressDialog.setCancelable(false);
-            StorageReference filebath = s.child("photos").child(imageuri.getLastPathSegment());
+            StorageReference filebath = Storage.child("photos").child(imageuri.getLastPathSegment());
             filebath.putFile(imageuri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     Uri down = taskSnapshot.getDownloadUrl();
+
+                    post.child("catorgy_image").setValue(down.toString());
+
+                    UploadOffer(post);
+
+                   if(check_offer)
+                   {
+
+                       UploadOffer(offers);
+                       uploadOfferImage();
+                   }
+
+                UploadingImages(filepath);
+
+                    /*
                     post.child("catorgy_name").setValue(editText_shop.getText().toString());
                     post.child("catorgy_image").setValue(down.toString());
 
@@ -168,9 +204,8 @@ public class Shop extends AppCompatActivity {
                     post.child("Facebook").setValue(facebook.getText().toString().toLowerCase().trim());
                     post.child("Instgram").setValue(Instgram.getText().toString().toLowerCase().trim());
                     post.child("Twitter").setValue(Twitter.getText().toString().toLowerCase().trim());
+*/
 
-
-                    UploadingImages(filepath);
 
 
                     Toast.makeText(getApplicationContext(), "Post Succsesfull", Toast.LENGTH_LONG).show();
@@ -201,6 +236,15 @@ public class Shop extends AppCompatActivity {
         startActivityForResult(intent, SoloImages);
 
     }
+
+    public void select_shopimageOffer (android.view.View v) {
+
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, OfferImages);
+
+    }
+
 
 
     public void selectImagesOfshop(android.view.View v) {
@@ -242,6 +286,38 @@ public class Shop extends AppCompatActivity {
 
         break;
 
+
+          case OfferImages:
+
+              imageuri_offer = data.getData();
+              ImageButton_offer.setImageURI(imageuri_offer);
+
+              Bitmap resized2 = null;
+              try {
+                  Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageuri_offer);
+
+                  resized2 = Bitmap.createScaledBitmap(bitmap, 1000, 1020, true);
+
+
+              } catch (IOException e) {
+                  e.printStackTrace();
+              }
+
+              ImageButton_offer.setImageBitmap(resized2);
+
+              break;
+
+
+
+
+
+
+
+
+
+
+
+
          case MultiImages:
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             if (data.getClipData() != null) {
@@ -274,7 +350,7 @@ public class Shop extends AppCompatActivity {
    {
             for (int i=0 ; i < arraylist.size();i++)
             {
-            StorageReference file =s.child("photo").child(arraylist.get(i).getLastPathSegment());
+            StorageReference file =Storage.child("photo").child(arraylist.get(i).getLastPathSegment());
             final int finalI = i;
             file.putFile(arraylist.get(i)).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -299,7 +375,47 @@ public class Shop extends AppCompatActivity {
     }
 
 
+    public void UploadOffer(DatabaseReference reference)
+    {
+        reference.child("catorgy_name").setValue(editText_shop.getText().toString());
+
+        ShopVisitors.child(editText_shop.getText().toString()).child("ShopName").setValue(editText_shop.getText().toString());
+        ShopVisitors.child(editText_shop.getText().toString()).child("visits").setValue(String.valueOf(initialVisits));
+
+        reference.child("shop_details").setValue(editText_details.getText().toString().toLowerCase().trim());
+        reference.child("shop_mobile").setValue(editText_mobile.getText().toString().toLowerCase().trim());
+        reference.child("shop_mobile2").setValue(editText_mobile2.getText().toString().toLowerCase().trim());
+        reference.child("shop_mobile3").setValue(editText_mobile3.getText().toString().toLowerCase().trim());
+        reference.child("shop_mobile4").setValue(editText_mobile4.getText().toString().toLowerCase().trim());
+        reference.child("shop_home").setValue(editText_home.getText().toString().toLowerCase().trim());
+        reference.child("shop_home2").setValue(editText_home2.getText().toString().toLowerCase().trim());
+        reference.child("shop_home3").setValue(editText_home3.getText().toString().toLowerCase().trim());
+        reference.child("Facebook").setValue(facebook.getText().toString().toLowerCase().trim());
+        reference.child("Instgram").setValue(Instgram.getText().toString().toLowerCase().trim());
+        reference.child("Twitter").setValue(Twitter.getText().toString().toLowerCase().trim());
+    }
 
 
+
+
+    public void uploadOfferImage(){
+
+        StorageReference file=Storage.child("photos").child(imageuri_offer.getLastPathSegment());
+        file.putFile(imageuri_offer).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+            Uri uri=taskSnapshot.getDownloadUrl();
+            offers.child("catorgy_image").setValue(uri.toString());
+
+            }
+        });
+
+
+
+
+
+
+            }
 
 }
+
