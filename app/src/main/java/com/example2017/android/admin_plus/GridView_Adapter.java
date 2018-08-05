@@ -1,6 +1,7 @@
 package com.example2017.android.admin_plus;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +16,10 @@ import java.util.ArrayList;
  */
 public class GridView_Adapter extends BaseAdapter {
 
-    ArrayList<Gridview_item> arrayList =new ArrayList<>();
+    ArrayList<Uri> arrayList =new ArrayList<>();
     Context c;
 
-    public GridView_Adapter(ArrayList<Gridview_item> arrayList, Context c) {
+    public GridView_Adapter(ArrayList<Uri> arrayList, Context c) {
         this.arrayList = arrayList;
         this.c = c;
     }
@@ -43,18 +44,11 @@ public class GridView_Adapter extends BaseAdapter {
 
         view=LayoutInflater.from(c).inflate(R.layout.gridview_item,null);
         ImageView img=(ImageView)view.findViewById(R.id.spacecraftImg);
-        TextView txt=(TextView)view.findViewById(R.id.nameTxt);
 
-        final Gridview_item temp=(Gridview_item)this.getItem(i);
-
-
-        img.setImageURI(temp.getUri());
-
-        txt.setText(temp.getName());
+        final Uri temp=arrayList.get(i);
 
 
-
-
+        img.setImageURI(temp);
 
         return view;
     }

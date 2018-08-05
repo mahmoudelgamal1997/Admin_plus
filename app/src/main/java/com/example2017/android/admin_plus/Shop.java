@@ -40,7 +40,8 @@ public class Shop extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
     ProgressDialog progressDialog;
     String city_selected, catorgy_selected;
-    public static final int gallery = 2;
+    public static final int MultiImages = 1 ;
+    public static final int SoloImages  = 2 ;
     private Uri imageuri = null;
     ImageButton imageButton;
     EditText editText_shop, editText_home, editText_home2, editText_home3, editText_mobile, editText_mobile2, editText_mobile3, editText_mobile4, editText_details, facebook, Instgram, Twitter;
@@ -197,13 +198,13 @@ public class Shop extends AppCompatActivity {
 
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
-        startActivityForResult(intent, gallery);
+        startActivityForResult(intent, SoloImages);
 
     }
 
 
     public void selectImagesOfshop(android.view.View v) {
-
+        //to select multi images from gallery
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
@@ -214,74 +215,91 @@ public class Shop extends AppCompatActivity {
     }
 
 
-    @Override
+@Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK) {
+    if (resultCode == RESULT_OK) {
 
-            switch (requestCode) {
+      switch (requestCode) {
 
-                case gallery:
-                    imageuri = data.getData();
-                    imageButton.setImageURI(imageuri);
+        case SoloImages:
+        imageuri = data.getData();
+        imageButton.setImageURI(imageuri);
 
-                    Bitmap resized = null;
-                    try {
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageuri);
+        Bitmap resized = null;
+        try {
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageuri);
 
-                        resized = Bitmap.createScaledBitmap(bitmap, 1000, 1020, true);
-
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    imageButton.setImageBitmap(resized);
-
-                    break;
+        resized = Bitmap.createScaledBitmap(bitmap, 1000, 1020, true);
 
 
-                case 1:
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                        if (data.getClipData() != null) {
-                            int count = data.getClipData().getItemCount(); //evaluate the count before the for loop --- otherwise, the count is evaluated every loop.
-                            for (int i = 0; i < count; i++) {
-                                Uri imageUri = data.getClipData().getItemAt(i).getUri();
+        } catch (IOException e) {
+        e.printStackTrace();
+        }
 
-                                filepath.add(imageUri);
-                                //do something with the image (save it to some directory or whatever you need to do with it here)
-                            }
-                        } else if (data.getData() != null) {
-                            String imagePath = data.getData().getPath();
-                            //do something with the image (save it to some directory or whatever you need to do with it here)
-                        }
-                    }
-            }
+        imageButton.setImageBitmap(resized);
 
+        break;
+
+         case MultiImages:
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            if (data.getClipData() != null) {
+            int count = data.getClipData().getItemCount(); //evaluate the count before the for loop --- otherwise, the count is evaluated every loop.
+                for (int i = 0; i < count; i++) {
+                Uri imageUri = data.getClipData().getItemAt(i).getUri();
+                filepath.add(imageUri);
+
+                SetGridView();
+                //do something with the image (save it to some directory or whatever you need to do with it here)
+                }
+        } else if (data.getData() != null) {
+        String imagePath = data.getData().getPath();
+        //do something with the image (save it to some directory or whatever you need to do with it here)
+        }
+
+
+
+
+
+
+
+
+
+          }}
 
         }}
 
    public void  UploadingImages(ArrayList<Uri> arraylist)
    {
-
-
-for (int i=1 ; i<=filepath.size();i++){
-
-
-
-    StorageReference file =s.child("photo").child(filepath.get(i).getLastPathSegment());
-    final int finalI = i;
-    file.putFile(filepath.get(i)).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-        @Override
-        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+            for (int i=0 ; i < arraylist.size();i++)
+            {
+            StorageReference file =s.child("photo").child(arraylist.get(i).getLastPathSegment());
+            final int finalI = i;
+            file.putFile(arraylist.get(i)).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
             Uri down =taskSnapshot.getDownloadUrl();
-            post.child("img"+ finalI).setValue(down.toString());
-
-        }
+            post.child("img"+(finalI+1)).setValue(down.toString());
+            }
     });
 
 
         }
    }
+
+
+
+    public void SetGridView(){
+
+        GridView gridView =(GridView)findViewById(R.id.gridview);
+        GridView_Adapter gridView_adapter=new GridView_Adapter(filepath,this);
+        gridView.setAdapter(gridView_adapter);
+
+    }
+
+
+
+
+
 }
