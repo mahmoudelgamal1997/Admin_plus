@@ -1,7 +1,9 @@
 package com.example2017.android.admin_plus;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -53,6 +55,7 @@ public class Shop extends AppCompatActivity {
     ArrayList<Uri> filepath = new ArrayList<>();
     GridView gridView;
     DatabaseReference post=null;
+    SharedPreferences sh;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -171,11 +174,15 @@ public class Shop extends AppCompatActivity {
                    if(check_offer)
                    {
 
-                       UploadOffer(offers);
-                       uploadOfferImage();
+
+                       DatabaseReference temp =offers.push();
+                       UploadOffer(temp);
+                       uploadOfferImage(temp);
                    }
 
                 UploadingImages(filepath);
+
+
 
                     /*
                     post.child("catorgy_name").setValue(editText_shop.getText().toString());
@@ -228,6 +235,15 @@ public class Shop extends AppCompatActivity {
 
 
     }
+
+    public void MapOfshop(android.view.View v) {
+
+        Intent intent=new Intent(Shop.this,MapsActivity.class);
+        startActivity(intent);
+
+
+    }
+
 
     public void select_shopimage(android.view.View v) {
 
@@ -393,19 +409,37 @@ public class Shop extends AppCompatActivity {
         reference.child("Facebook").setValue(facebook.getText().toString().toLowerCase().trim());
         reference.child("Instgram").setValue(Instgram.getText().toString().toLowerCase().trim());
         reference.child("Twitter").setValue(Twitter.getText().toString().toLowerCase().trim());
+
+
+
+
+        sh=getSharedPreferences("plz", Context.MODE_PRIVATE );
+
+        String latiude=(sh.getString( "latitude","emputy" ) );
+        String longtude=(sh.getString( "longtiude","emputy" ) );
+
+        reference.child("latiude").setValue(latiude);
+        reference.child("longtiude").setValue(longtude);
+        reference.child("latiude").setValue(latiude);
+        reference.child("longtiude").setValue(longtude);
+
+
+
+
+
     }
 
 
 
 
-    public void uploadOfferImage(){
+    public void uploadOfferImage(final DatabaseReference reference){
 
         StorageReference file=Storage.child("photos").child(imageuri_offer.getLastPathSegment());
         file.putFile(imageuri_offer).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
             Uri uri=taskSnapshot.getDownloadUrl();
-            offers.child("catorgy_image").setValue(uri.toString());
+            reference.child("catorgy_image").setValue(uri.toString());
 
             }
         });
